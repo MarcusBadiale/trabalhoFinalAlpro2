@@ -15,6 +15,7 @@
 		AB571191238EA06F00D8F62A /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AB57118F238EA06F00D8F62A /* Main.storyboard */; };
 		AB571193238EA07200D8F62A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AB571192238EA07200D8F62A /* Assets.xcassets */; };
 		AB571196238EA07200D8F62A /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AB571194238EA07200D8F62A /* LaunchScreen.storyboard */; };
+		AB57119F238EA13E00D8F62A /* Card.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB57119E238EA13E00D8F62A /* Card.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,6 +29,7 @@
 		AB571192238EA07200D8F62A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		AB571195238EA07200D8F62A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		AB571197238EA07200D8F62A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AB57119E238EA13E00D8F62A /* Card.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Card.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -60,6 +62,7 @@
 		AB571184238EA06F00D8F62A /* TrabalhoAlpro2 */ = {
 			isa = PBXGroup;
 			children = (
+				AB57119D238EA12800D8F62A /* Model */,
 				AB571185238EA06F00D8F62A /* AppDelegate.swift */,
 				AB571187238EA06F00D8F62A /* GameScene.sks */,
 				AB571189238EA06F00D8F62A /* Actions.sks */,
@@ -71,6 +74,14 @@
 				AB571197238EA07200D8F62A /* Info.plist */,
 			);
 			path = TrabalhoAlpro2;
+			sourceTree = "<group>";
+		};
+		AB57119D238EA12800D8F62A /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				AB57119E238EA13E00D8F62A /* Card.swift */,
+			);
+			path = Model;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -149,6 +160,7 @@
 				AB57118C238EA06F00D8F62A /* GameScene.swift in Sources */,
 				AB57118E238EA06F00D8F62A /* GameViewController.swift in Sources */,
 				AB571186238EA06F00D8F62A /* AppDelegate.swift in Sources */,
+				AB57119F238EA13E00D8F62A /* Card.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

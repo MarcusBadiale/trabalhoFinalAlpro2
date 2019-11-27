@@ -11,79 +11,171 @@ import GameplayKit
 
 class GameScene: SKScene {
     
-    private var label : SKLabelNode?
-    private var spinnyNode : SKShapeNode?
+    //API PORTAL LINK ----> http://deckofcardsapi.com/
     
+    //MARK: - Variables
+    var player1Button: SKSpriteNode?
+    var player2Button: SKSpriteNode?
+    var backgroundNode: SKSpriteNode?
+    var cardNode: SKSpriteNode?
+    var deckId = ""
+    var remaining = 0
+    var hand: [Card] = []
+    var resp: Bool = false
+    
+    //MARK: - DidMove to view
     override func didMove(to view: SKView) {
-        
-        // Get label node from scene and store it for use later
-        self.label = self.childNode(withName: "//helloLabel") as? SKLabelNode
-        if let label = self.label {
-            label.alpha = 0.0
-            label.run(SKAction.fadeIn(withDuration: 2.0))
-        }
-        
-        // Create shape node to use during mouse interaction
-        let w = (self.size.width + self.size.height) * 0.05
-        self.spinnyNode = SKShapeNode.init(rectOf: CGSize.init(width: w, height: w), cornerRadius: w * 0.3)
-        
-        if let spinnyNode = self.spinnyNode {
-            spinnyNode.lineWidth = 2.5
-            
-            spinnyNode.run(SKAction.repeatForever(SKAction.rotate(byAngle: CGFloat(Double.pi), duration: 1)))
-            spinnyNode.run(SKAction.sequence([SKAction.wait(forDuration: 0.5),
-                                              SKAction.fadeOut(withDuration: 0.5),
-                                              SKAction.removeFromParent()]))
-        }
+        createInitialNodes()
+        createDeck()
     }
     
-    
-    func touchDown(atPoint pos : CGPoint) {
-        if let n = self.spinnyNode?.copy() as! SKShapeNode? {
-            n.position = pos
-            n.strokeColor = SKColor.green
-            self.addChild(n)
-        }
-    }
-    
-    func touchMoved(toPoint pos : CGPoint) {
-        if let n = self.spinnyNode?.copy() as! SKShapeNode? {
-            n.position = pos
-            n.strokeColor = SKColor.blue
-            self.addChild(n)
-        }
-    }
-    
-    func touchUp(atPoint pos : CGPoint) {
-        if let n = self.spinnyNode?.copy() as! SKShapeNode? {
-            n.position = pos
-            n.strokeColor = SKColor.red
-            self.addChild(n)
-        }
-    }
-    
-    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        if let label = self.label {
-            label.run(SKAction.init(named: "Pulse")!, withKey: "fadeInOut")
-        }
-        
-        for t in touches { self.touchDown(atPoint: t.location(in: self)) }
-    }
-    
-    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-        for t in touches { self.touchMoved(toPoint: t.location(in: self)) }
-    }
-    
-    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        for t in touches { self.touchUp(atPoint: t.location(in: self)) }
-    }
-    
-    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
-        for t in touches { self.touchUp(atPoint: t.location(in: self)) }
-    }
-    
+    //MARK: - Update
     
     override func update(_ currentTime: TimeInterval) {
         // Called before each frame is rendered
     }
+    
+    //MARK: - Touches
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        
+        guard let touch = touches.first else { return }
+
+        let touchLocation = touch.location(in: self)
+        let touchedNode = self.atPoint(touchLocation)
+        
+        switch touchedNode.name {
+        case "Player1Button":
+            print("tapped player 1 node")
+        case "Player2Button":
+            print("tapped player 2 node")
+        default:
+            print("default")
+        }
+    }
+    
+    //MARK: - Auxiliares functions
+    
+    func createInitialNodes() {
+        
+        let width = self.frame.size.width
+        let height = self.frame.size.height
+        
+        player1Button = SKSpriteNode(texture: nil, color: .red, size: CGSize(width: width * 0.9, height: height * 0.1))
+        player1Button?.position = CGPoint(x: self.frame.midX, y: self.frame.minY + (player1Button?.size.height ?? CGFloat.zero))
+        player1Button?.name = "Player1Button"
+        player1Button?.zPosition = 2
+        
+        player2Button = SKSpriteNode(texture: nil, color: .blue, size: CGSize(width: width * 0.9, height: height * 0.1))
+        player2Button?.position = CGPoint(x: self.frame.midX, y: self.frame.maxY - (player2Button?.size.height ?? CGFloat.zero))
+        player2Button?.name = "Player2Button"
+        player2Button?.zPosition = 2
+        
+        backgroundNode = SKSpriteNode(texture: SKTexture(imageNamed: "background"), color: .clear, size: CGSize(width: width, height: height))
+        backgroundNode?.position  = CGPoint(x: self.frame.midX, y: self.frame.midY)
+        
+        cardNode = SKSpriteNode(texture: nil, color: .black, size: CGSize(width: width * 0.6, height: height * 0.6))
+        cardNode?.position = CGPoint(x: self.frame.midX, y: self.frame.midY)
+        cardNode?.zPosition = 2
+        
+        addChild(player1Button ?? SKSpriteNode())
+        addChild(player2Button ?? SKSpriteNode())
+        addChild(backgroundNode ?? SKSpriteNode())
+        addChild(cardNode ?? SKSpriteNode())
+    }
+    
+    //MARK: - Networking
+    func createDeck(){
+        let urlString = URL(string: "https://deckofcardsapi.com/api/deck/new/")
+        
+        if let url = urlString {
+            let task = URLSession.shared.dataTask(with: url) { (data, response, error) in
+                if error != nil {
+                    print(error ?? "")
+                } else {
+                    do{
+                        //here dataResponse received from a network request
+                        let jsonResponse = try JSONSerialization.jsonObject(with: data!, options:.allowFragments)
+                        guard let jsonArray = jsonResponse as? [String: Any] else {
+                            return
+                        }
+                        //Now get title value
+                        guard let title = jsonArray["deck_id"] as? String else { return }
+                        self.deckId = title
+                        guard let title2 = jsonArray["remaining"] as? Int else { return }
+                        self.remaining = title2
+                        self.shuffleCards()
+                    } catch let parsingError {
+                        print("Error", parsingError)
+                    }
+                }
+            }
+            task.resume()
+        }
+    }
+    
+        func shuffleCards(){
+            let urlString = URL(string: "https://deckofcardsapi.com/api/deck/\(deckId)/shuffle/")
+            
+            if let url = urlString {
+                let task = URLSession.shared.dataTask(with: url) { (data, response, error) in
+                    if error != nil {
+                        print(error ?? "")
+                    } else {
+                        do{
+                            //here dataResponse received from a network request
+                            let jsonResponse = try JSONSerialization.jsonObject(with: data!, options:.allowFragments)
+                            guard let jsonArray = jsonResponse as? [String: Any] else {
+                                return
+                            }
+                            self.drawCard()
+                            self.drawCard()
+                            self.drawCard()
+                        } catch let parsingError {
+                            print("Error", parsingError)
+                        }
+                    }
+                }
+                task.resume()
+            }
+        }
+        
+        func drawCard() {
+            
+            let urlString = URL(string: "https://deckofcardsapi.com/api/deck/\(deckId)/draw/?count=1")
+            
+            if let url = urlString {
+                let task = URLSession.shared.dataTask(with: url) { (data, response, error) in
+                    if error != nil {
+                        print(error ?? "")
+                        
+                    } else {
+                        do{
+                            //here dataResponse received from a network request
+                            let jsonResponse = try JSONSerialization.jsonObject(with: data!, options:.allowFragments)
+                            guard let jsonArray = jsonResponse as? [String: Any] else {
+                                print("teste1")
+                                return
+                            }
+                            print(jsonArray)
+                            //Now get title value
+                            guard let title = jsonArray["cards"] as? [[String : Any]] else { return }
+                            let title2 = title[0]
+                            guard let image = title2["image"] as? String else { return }
+                            guard let value = title2["value"] as? String else { return }
+                            guard let suit = title2["suit"] as? String else { return }
+                            guard let code = title2["code"] as? String else { return }
+                            
+                            self.hand.append(Card(image: image, value: value, suit: suit, code: code))
+                            self.resp = true
+                            
+                        } catch let parsingError {
+                            print("Error", parsingError)
+                        }
+                    }
+                }
+                task.resume()
+            }
+        }
+    
+    
 }
